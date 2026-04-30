@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Intelligence Dashboard | US Utilities Peer Benchmarking</title>
+    <meta name="description" content="C-Suite executive intelligence dashboard benchmarking NextEra Energy, Duke Energy, Southern Company, NRG Energy, and Constellation Energy. Evidence-based insights from public filings.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    
+    <!-- Marked.js for markdown in chatbot -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- PDF.js for Local PDF Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- ============ BOOT SEQUENCE OVERLAY ============ -->
+        <div id="boot-overlay" class="overlay active">
+            <div class="scanner-container">
+                <div class="gemini-logo">
+                    <svg viewBox="0 0 60 60" width="80" height="80">
+                        <circle cx="30" cy="30" r="28" fill="none" stroke="#e0044e" stroke-width="1.5" opacity="0.3"/>
+                        <circle cx="30" cy="30" r="20" fill="none" stroke="#e0044e" stroke-width="1" opacity="0.5"/>
+                        <circle cx="30" cy="30" r="6" fill="#e0044e"/>
+                        <line x1="30" y1="2" x2="30" y2="12" stroke="#e0044e" stroke-width="1.5" opacity="0.6"/>
+                        <line x1="30" y1="48" x2="30" y2="58" stroke="#e0044e" stroke-width="1.5" opacity="0.6"/>
+                        <line x1="2" y1="30" x2="12" y2="30" stroke="#e0044e" stroke-width="1.5" opacity="0.6"/>
+                        <line x1="48" y1="30" x2="58" y2="30" stroke="#e0044e" stroke-width="1.5" opacity="0.6"/>
+                    </svg>
+                </div>
+                <h1 class="scanning-title">Initializing Executive Intelligence Engine...</h1>
+                <div class="terminal-box" id="terminal"></div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ MAIN DASHBOARD ============ -->
+        <main class="dashboard hidden" id="dashboard">
+            <!-- SIDEBAR -->
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-brand">
+                    <h2 class="evalueserve-text-logo">EVALUESERVE</h2>
+                    <p class="sidebar-subtitle">Champions Energy Live<br><span class="accent">Intelligence Agent (CELIA)</span></p>
+                </div>
+                <ul class="nav-links" id="sidebar-nav">
+                    <li class="active"><button id="nav-macro" class="nav-btn" data-view="macro">
+                        <span class="nav-icon">📊</span> Macro Benchmarking
+                    </button></li>
+                    <li><button id="nav-deepdive" class="nav-btn" data-view="deepdive">
+                        <span class="nav-icon">🔍</span> Company Deep Dives
+                    </button></li>
+                    <li><button id="nav-news" class="nav-btn" data-view="news">
+                        <span class="nav-icon">📰</span> Live Intelligence Feed
+                    </button></li>
+                </ul>
+                <div class="sidebar-peers">
+                    <h4 class="sidebar-section-title">Benchmarked Peers</h4>
+                    <div class="peer-chips" id="peer-chips">
+                        <button class="peer-chip" data-company="nextera"><span class="peer-dot nee"></span>NextEra Energy</button>
+                        <button class="peer-chip" data-company="duke"><span class="peer-dot duk"></span>Duke Energy</button>
+                        <button class="peer-chip" data-company="southern"><span class="peer-dot so"></span>Southern Company</button>
+                        <button class="peer-chip" data-company="nrg"><span class="peer-dot nrg"></span>NRG Energy</button>
+                        <button class="peer-chip" data-company="constellation"><span class="peer-dot ceg"></span>Constellation Energy</button>
+                    </div>
+                </div>
+                <div class="sidebar-footer">
+                    <p class="data-source-tag">Data as of Q4 FY2025<br>Source: 10-K/10-Q Public Filings</p>
+                </div>
+            </nav>
+
+            <!-- MAIN CONTENT AREA -->
+            <section class="main-content">
+                <!-- TOP BAR -->
+                <header class="topbar">
+                    <div>
+                        <h1 id="page-title">Champions Energy Live Intelligence Agent (CELIA)</h1>
+                        <p class="subtitle" id="page-subtitle">FY2025 Peer Intelligence | Evidence-Based Analysis</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="last-updated">
+                            <span class="pulse-dot"></span>
+                            <span>Live Data Feed</span>
+                        </div>
+                        <button class="btn primary-btn" id="btn-export">Export Brief</button>
+                    </div>
+                </header>
+
+                <!-- ========== MACRO VIEW ========== -->
+                <div id="view-macro" class="view-panel">
+                    <!-- KPI CARDS -->
+                    <div class="kpi-grid kpi-grid-5">
+                        <div class="kpi-card glass" id="kpi-total-mcap">
+                            <div class="kpi-header-row">
+                                <h3>Combined Market Cap</h3>
+                                <button class="info-btn" data-tooltip="Aggregate Market Capitalization. Year: As of April 2026. Source: Public web search (Macrotrends, Stockanalysis).">ⓘ</button>
+                            </div>
+                            <div class="kpi-value">$551B</div>
+                            <div class="kpi-delta positive">+12.4% YoY</div>
+                        </div>
+                        <div class="kpi-card glass" id="kpi-total-rev">
+                            <div class="kpi-header-row">
+                                <h3>Combined Revenue</h3>
+                                <button class="info-btn" data-tooltip="Total Annual Revenue. Year: FY2025. Source: 10-K Filings and Q4 Earnings Presentations.">ⓘ</button>
+                            </div>
+                            <div class="kpi-value">$145B</div>
+                            <div class="kpi-delta positive">+8.2% YoY</div>
+                        </div>
+                        <div class="kpi-card glass" id="kpi-total-customers">
+                            <div class="kpi-header-row">
+                                <h3>Total Customers Served</h3>
+                                <button class="info-btn" data-tooltip="Total number of retail and commercial customers. Source: Q4 Earnings Presentations & Public Web Search.">ⓘ</button>
+                            </div>
+                            <div class="kpi-value">~42M</div>
+                            <div class="kpi-sub">Across all 5 peers</div>
+                        </div>
+                        <div class="kpi-card glass" id="kpi-avg-capex">
+                            <div class="kpi-header-row">
+                                <h3>Avg. 5Y CAPEX Commitment</h3>
+                                <button class="info-btn" data-tooltip="Average projected 5-Year Capital Expenditures. Source: FY2025 Earnings Call Slides.">ⓘ</button>
+                            </div>
+                            <div class="kpi-value">$74B</div>
+                            <div class="kpi-delta positive">Record levels</div>
+                        </div>
+                        <div class="kpi-card glass" id="kpi-renewables">
+                            <div class="kpi-header-row">
+                                <h3>Clean Energy Capacity</h3>
+                                <button class="info-btn" data-tooltip="Combined Nuclear, Wind, Solar, and Hydro capacity. Source: Corporate Sustainability Reports and Q4 Presentations.">ⓘ</button>
+                            </div>
+                            <div class="kpi-value">~142 GW</div>
+                            <div class="kpi-sub">Nuclear + Renewables</div>
+                        </div>
+                    </div>
+
+                    <!-- CHARTS ROW 1 -->
+                    <div class="charts-grid">
+                        <div class="chart-card glass">
+                            <div class="chart-title-row">
+                                <h3>Market Cap vs. Revenue — Peer Positioning</h3>
+                                <button class="info-btn" data-tooltip="Bubble size represents trailing twelve month revenue. Position shows market capitalization. Source: Public earnings releases Q4 FY2025 and market data as of April 2026.">ⓘ</button>
+                            </div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-tall">
+                                <canvas id="bubbleChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card glass">
+                            <div class="chart-title-row">
+                                <h3>Revenue Trend (FY2023–FY2025)</h3>
+                                <button class="info-btn" data-tooltip="Trailing annual revenue for each peer across the last 3 fiscal years. Source: Q4 Earnings Presentations.">ⓘ</button>
+                            </div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-tall">
+                                <canvas id="revenueTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STRATEGIC INVESTMENT RADAR — 2x2 MATRIX -->
+                    <div class="investment-radar glass">
+                        <div class="chart-title-row">
+                            <h3>🎯 Strategic Investment Radar — Where Are Peers Investing?</h3>
+                            <button class="info-btn" data-tooltip="2x2 matrix mapping each company's primary investment focus areas based on announced CAPEX plans, capital allocation priorities from 10-K filings, and strategic commentary from earnings calls.">ⓘ</button>
+                        </div>
+                        <div class="radar-matrix" id="radar-matrix">
+                            <div class="radar-axis-label radar-y-label">Capital Intensity →</div>
+                            <div class="radar-axis-label radar-x-label">Growth Orientation →</div>
+                            <div class="radar-quadrant q1">
+                                <div class="quadrant-label">Renewable Expansion</div>
+                                <div class="quadrant-sublabel">High Growth · High CAPEX</div>
+                            </div>
+                            <div class="radar-quadrant q2">
+                                <div class="quadrant-label">Grid Modernization</div>
+                                <div class="quadrant-sublabel">Regulated Growth · High CAPEX</div>
+                            </div>
+                            <div class="radar-quadrant q3">
+                                <div class="quadrant-label">Nuclear Baseload</div>
+                                <div class="quadrant-sublabel">Stable · Moderate CAPEX</div>
+                            </div>
+                            <div class="radar-quadrant q4">
+                                <div class="quadrant-label">Retail & Technology</div>
+                                <div class="quadrant-sublabel">Asset-Light · High Margin</div>
+                            </div>
+                            <!-- Company bubbles positioned via JS -->
+                            <div class="radar-bubble nee" style="left:22%;top:18%;" data-company="nextera">
+                                <div class="bubble-inner">NEE</div>
+                                <div class="bubble-tooltip">NextEra Energy<br>Focus: Massive renewable pipeline (22GW wind, 16GW solar), battery storage expansion</div>
+                            </div>
+                            <div class="radar-bubble duk" style="left:68%;top:22%;" data-company="duke">
+                                <div class="bubble-inner">DUK</div>
+                                <div class="bubble-tooltip">Duke Energy<br>Focus: $103B grid modernization, 14GW new capacity, regulated growth</div>
+                            </div>
+                            <div class="radar-bubble so" style="left:55%;top:45%;" data-company="southern">
+                                <div class="bubble-inner">SO</div>
+                                <div class="bubble-tooltip">Southern Company<br>Focus: Vogtle nuclear, grid resilience, balanced regulated + clean energy</div>
+                            </div>
+                            <div class="radar-bubble nrg-b" style="left:78%;top:72%;" data-company="nrg">
+                                <div class="bubble-inner">NRG</div>
+                                <div class="bubble-tooltip">NRG Energy<br>Focus: Retail energy platform, 13GW LS Power acquisition, demand response (CPower)</div>
+                            </div>
+                            <div class="radar-bubble ceg" style="left:35%;top:58%;" data-company="constellation">
+                                <div class="bubble-inner">CEG</div>
+                                <div class="bubble-tooltip">Constellation Energy<br>Focus: Nuclear fleet optimization (55-60GW post-Calpine), data center PPAs, clean matching</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MARKET TRENDS MEMO -->
+                    <div class="trends-memo glass">
+                        <div class="chart-title-row">
+                            <h3>📋 Market Trends Memo — Top 3 Macro Tailwinds</h3>
+                        </div>
+                        <div class="memo-grid">
+                            <div class="memo-card">
+                                <div class="memo-icon">⚡</div>
+                                <h4>AI Data Center Load Surge</h4>
+                                <p>U.S. data center electricity demand is projected to reach 35-40 GW by 2030. Hyperscalers are signing multi-GW PPAs directly with utilities. Duke, NextEra, and Constellation are primary beneficiaries with behind-the-meter and co-location strategies.</p>
+                                <div class="memo-impact">Impact: <span class="high">HIGH</span></div>
+                            </div>
+                            <div class="memo-card">
+                                <div class="memo-icon">🌿</div>
+                                <h4>IRA Renewable Tax Credits Extension</h4>
+                                <p>The Inflation Reduction Act's Production Tax Credits (PTCs) and Investment Tax Credits (ITCs) continue to de-risk renewable investments through 2032+. Nuclear PTCs ($15/MWh) are a transformative tailwind for Constellation's fleet economics.</p>
+                                <div class="memo-impact">Impact: <span class="high">HIGH</span></div>
+                            </div>
+                            <div class="memo-card">
+                                <div class="memo-icon">🔧</div>
+                                <h4>Grid Modernization & Electrification</h4>
+                                <p>Record $190-200B decade-long grid investment commitments (Duke alone: $103B over 5 years). Driven by aging infrastructure, EV adoption, extreme weather resilience, and industrial reshoring demand across Southeast and Midwest corridors.</p>
+                                <div class="memo-impact">Impact: <span class="medium">MEDIUM-HIGH</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CAPEX COMPARISON -->
+                    <div class="charts-grid">
+                        <div class="chart-card glass span-2">
+                            <div class="chart-title-row">
+                                <h3>5-Year CAPEX Commitment Comparison ($B)</h3>
+                                <button class="info-btn" data-tooltip="Announced multi-year capital expenditure plans from latest earnings presentations and investor days. Source: Q4 FY2025 earnings slides and 10-K filings.">ⓘ</button>
+                            </div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="capexChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== DEEP DIVE VIEW ========== -->
+                <div id="view-deepdive" class="view-panel hidden">
+                    <div class="company-selector" id="company-selector">
+                        <button class="company-tab active" data-company="nextera">
+                            <span class="tab-dot nee"></span>NextEra Energy
+                        </button>
+                        <button class="company-tab" data-company="duke">
+                            <span class="tab-dot duk"></span>Duke Energy
+                        </button>
+                        <button class="company-tab" data-company="southern">
+                            <span class="tab-dot so"></span>Southern Company
+                        </button>
+                        <button class="company-tab" data-company="nrg">
+                            <span class="tab-dot nrg"></span>NRG Energy
+                        </button>
+                        <button class="company-tab" data-company="constellation">
+                            <span class="tab-dot ceg"></span>Constellation Energy
+                        </button>
+                    </div>
+
+                    <!-- Company Detail Panel -->
+                    <div id="company-detail" class="company-detail">
+                        <!-- KEY STATS -->
+                        <div class="stats-grid" id="stats-grid">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="detail-grid">
+                            <!-- SWOT MATRIX -->
+                            <div class="swot-container glass" id="swot-container">
+                                <h3 class="section-title">SWOT Analysis</h3>
+                                <div class="swot-grid" id="swot-grid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+
+                            <!-- EARNINGS INSIGHT -->
+                            <div class="earnings-container glass" id="earnings-container">
+                                <h3 class="section-title">Recent Earnings Insight — Q4 FY2025</h3>
+                                <div class="earnings-tone" id="earnings-tone"></div>
+                                <ul class="earnings-bullets" id="earnings-bullets">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- ENERGY MIX CHART -->
+                        <div class="chart-card glass energy-mix-section">
+                            <div class="chart-title-row">
+                                <h3>Generation Capacity Mix</h3>
+                            </div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="energyMixChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== LIVE NEWS VIEW ========== -->
+                <div id="view-news" class="view-panel hidden">
+                    <!-- News Infographic Dashboard -->
+                    <div class="news-infographic glass" id="news-infographic">
+                        <div class="news-stat-card">
+                            <div class="news-stat-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">📰</div>
+                            <div class="news-stat-body">
+                                <span class="news-stat-value" id="total-releases-count">19</span>
+                                <span class="news-stat-label">Press Releases</span>
+                            </div>
+                        </div>
+                        <div class="news-stat-card">
+                            <div class="news-stat-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">🏢</div>
+                            <div class="news-stat-body">
+                                <span class="news-stat-value">5</span>
+                                <span class="news-stat-label">Companies Tracked</span>
+                            </div>
+                        </div>
+                        <div class="news-stat-card">
+                            <div class="news-stat-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">✅</div>
+                            <div class="news-stat-body">
+                                <span class="news-stat-value">100%</span>
+                                <span class="news-stat-label">Verified Sources</span>
+                            </div>
+                        </div>
+                        <div class="news-stat-card">
+                            <div class="news-stat-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">🕐</div>
+                            <div class="news-stat-body">
+                                <span class="news-stat-value" id="latest-news-date">—</span>
+                                <span class="news-stat-label">Latest Update</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters + Action Buttons Bar -->
+                    <div class="news-filters-bar">
+                        <div class="news-filters-left">
+                            <select id="news-company-filter" class="filter-dropdown">
+                                <option value="all">All Companies</option>
+                                <option value="nextera">NextEra Energy</option>
+                                <option value="duke">Duke Energy</option>
+                                <option value="southern">Southern Company</option>
+                                <option value="nrg">NRG Energy</option>
+                                <option value="constellation">Constellation Energy</option>
+                            </select>
+                            <select id="news-category-filter" class="filter-dropdown">
+                                <option value="all">All Categories</option>
+                                <option value="earnings">Earnings</option>
+                                <option value="strategy">Strategy</option>
+                                <option value="regulatory">Regulatory</option>
+                                <option value="deals">Deals &amp; M&amp;A</option>
+                            </select>
+                        </div>
+                        <div class="news-actions">
+                            <button id="download-news-excel" class="btn action-btn" title="Download all press releases as Excel">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Download Excel
+                            </button>
+                            <button id="generate-newsletter" class="btn primary-btn" title="Generate a formatted newsletter and open in your email client">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                Generate Newsletter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="news-grid" id="news-feed">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+        <!-- ============ CELIA CHATBOT ============ -->
+        <div id="celia-toggle" class="celia-toggle" title="Open Celia - Executive Intelligence Assistant">
+            <div class="celia-toggle-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </div>
+            <div class="celia-badge">Celia</div>
+        </div>
+
+        <div id="celia-panel" class="celia-panel hidden">
+            <div class="celia-header">
+                <div class="celia-header-left">
+                    <div class="celia-avatar">
+                        <svg viewBox="0 0 36 36" width="36" height="36">
+                            <circle cx="18" cy="18" r="17" fill="#43224d" stroke="#e0044e" stroke-width="1"/>
+                            <text x="18" y="23" text-anchor="middle" fill="white" font-size="14" font-family="Outfit">C</text>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="celia-name">Celia (Live AI)</div>
+                        <div class="celia-status"><span class="status-dot"></span>Executive Intelligence Assistant</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="celia-settings-btn" class="celia-close-btn" title="AI Settings">⚙️</button>
+                    <button id="celia-close" class="celia-close-btn" title="Close">&times;</button>
+                </div>
+            </div>
+
+            <!-- Settings Panel (Hidden by default) -->
+            <div id="celia-settings-panel" class="celia-settings-panel hidden">
+                <h4 style="margin-bottom: 10px; color: var(--eval-dark-purple);">Live Document Scanner</h4>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">To enable dynamic offline answering without an API key, please select the source PDF filings. Celia will parse them locally in your browser.</p>
+                
+                <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 5px;">Source Documents (PDFs):</label>
+                <input type="file" id="pdf-upload" multiple accept="application/pdf" style="width: 100%; font-size: 0.8rem; margin-bottom: 15px;">
+                
+                <button id="save-settings-btn" class="btn primary-btn" style="width: 100%;">Process PDFs & Initialize</button>
+            </div>
+
+            <div class="celia-messages" id="celia-messages">
+                <!-- Messages populated by JS -->
+            </div>
+            <div class="celia-suggestions" id="celia-suggestions">
+                <button class="suggestion-chip" data-q="Compare revenue across all peers">Revenue comparison</button>
+                <button class="suggestion-chip" data-q="What are Duke Energy's key risks?">Duke risks</button>
+                <button class="suggestion-chip" data-q="Summarize Constellation's nuclear advantage">CEG nuclear edge</button>
+                <button class="suggestion-chip" data-q="What are the latest news for NextEra?">NEE latest news</button>
+                <button class="suggestion-chip" data-q="Compare CAPEX plans across peers">CAPEX benchmark</button>
+                <button class="suggestion-chip" data-q="What are NRG's growth opportunities?">NRG opportunities</button>
+            </div>
+            <div class="celia-input-area">
+                <input type="text" id="celia-input" placeholder="Ask Celia about peer intelligence..." autocomplete="off">
+                <button id="celia-send" class="celia-send-btn">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- INFO TOOLTIP -->
+        <div id="info-tooltip" class="info-tooltip-box hidden"></div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
