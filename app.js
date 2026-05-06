@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (view === 'macro') document.getElementById('page-subtitle').textContent = 'FY2025 Peer Intelligence | Evidence-Based Analysis';
                 if (view === 'deepdive') document.getElementById('page-subtitle').textContent = 'Company-Specific Fundamental Analysis';
                 if (view === 'news') document.getElementById('page-subtitle').textContent = 'Real-Time Strategic Developments';
+                if (view === 'voice') document.getElementById('page-subtitle').textContent = 'Hyperscale Pain Points & Requirements';
 
                 if (view === 'macro') {
                     // Re-render charts to fix sizing if they were hidden

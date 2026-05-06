@@ -69,6 +69,9 @@
                     <li><button id="nav-news" class="nav-btn" data-view="news">
                         <span class="nav-icon">📰</span> Live Intelligence Feed
                     </button></li>
+                    <li><button id="nav-voice" class="nav-btn" data-view="voice">
+                        <span class="nav-icon">🗣️</span> Voice of Customer
+                    </button></li>
                 </ul>
                 <div class="sidebar-peers">
                     <h4 class="sidebar-section-title">Benchmarked Peers</h4>
@@ -447,6 +450,53 @@
                     </div>
                     <div class="news-grid" id="news-feed">
                         <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- ========== VOICE OF CUSTOMER VIEW ========== -->
+                <div id="view-voice" class="view-panel hidden">
+                    <div class="contracts-container glass">
+                        <div class="contracts-header">
+                            <h3 class="section-title">🗣️ Hyperscale Voice of Customer</h3>
+                        </div>
+                        <div class="contracts-table-wrap">
+                            <table class="contracts-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%">Customer</th>
+                                        <th style="width: 55%">Primary Clean Power "Voice"</th>
+                                        <th style="width: 30%">Major Roadblock</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span style="font-weight: bold; color: #4285F4;">Google</span></td>
+                                        <td><i style="color: #666;">"I need carbon-free energy every hour, not just an annual average."</i></td>
+                                        <td><span class="sector-tag govt">Lack of 24/7 "firm" green power.</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="font-weight: bold; color: #00a4ef;">Microsoft</span></td>
+                                        <td><i style="color: #666;">"I need to erase my historical footprint, not just current use."</i></td>
+                                        <td><span class="sector-tag utility">Nuclear and Carbon Capture scalability.</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="font-weight: bold; color: #ff9900;">Amazon</span></td>
+                                        <td><i style="color: #666;">"I need the most power, at the fastest speed, at the lowest cost."</i></td>
+                                        <td><span class="sector-tag mfg">Grid interconnection delays (3–5 years).</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="font-weight: bold; color: #1877F2;">Meta</span></td>
+                                        <td><i style="color: #666;">"I need to store today's solar for tomorrow's AI training."</i></td>
+                                        <td><span class="sector-tag auto">Immature long-duration battery tech.</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span style="font-weight: bold; color: #e0044e;">Equinix</span></td>
+                                        <td><i style="color: #666;">"I need my site to be green so my tenants stay happy."</i></td>
+                                        <td><span class="sector-tag it">Complex multi-tenant energy management.</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
