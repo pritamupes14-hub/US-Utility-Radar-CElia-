@@ -139,6 +139,37 @@ document.addEventListener('DOMContentLoaded', () => {
         populateDeepDive(companyId);
     }
 
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str.replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
+
+    function showModal(title, bodyHTML) {
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-body').innerHTML = bodyHTML;
+        document.getElementById('details-modal-overlay').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('details-modal-overlay').classList.remove('active');
+    }
+
+    document.getElementById('close-modal-btn')?.addEventListener('click', closeModal);
+    document.getElementById('details-modal-overlay')?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
     // 4. CHARTS (MACRO)
     Chart.register(ChartDataLabels);
     Chart.defaults.font.family = "'Inter', sans-serif";
@@ -268,6 +299,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // Customer Deal Analytics
+        renderDealAnalyticsCharts();
     }
 
     // 5. DEEP DIVE POPULATION
@@ -278,22 +312,49 @@ document.addEventListener('DOMContentLoaded', () => {
         // Stats
         document.getElementById('stats-grid').innerHTML = `
             <div class="kpi-card glass" style="border-top-color: ${colors[companyId]}">
-                <h3>Market Cap</h3>
+                <div class="kpi-header-row">
+                    <h3>Market Cap</h3>
+                    <button class="info-btn" data-tooltip="Market capitalization as of April 2026. Source: Public market data (Macrotrends, Stockanalysis).">ⓘ</button>
+                </div>
                 <div class="kpi-value">$${data.mcap}B</div>
             </div>
             <div class="kpi-card glass" style="border-top-color: ${colors[companyId]}">
-                <h3>FY2025 Revenue</h3>
+                <div class="kpi-header-row">
+                    <h3>FY2025 Revenue</h3>
+                    <button class="info-btn" data-tooltip="Annual revenue for Fiscal Year 2025. Includes all business segments. Source: 10-K Annual Filing & Q4 Earnings Presentation.">ⓘ</button>
+                </div>
                 <div class="kpi-value">$${data.revenue}B</div>
             </div>
             <div class="kpi-card glass" style="border-top-color: ${colors[companyId]}">
-                <h3>Customers Served</h3>
+                <div class="kpi-header-row">
+                    <h3>Electricity Customers</h3>
+                    <button class="info-btn" data-tooltip="Electricity-only retail and commercial customers. Excludes natural gas distribution customers (e.g., Duke ~1.6M gas, Southern ~4.3M gas via Nicor Gas / Atlanta Gas Light). Source: 10-K Filings & Q4 Earnings Presentations.">ⓘ</button>
+                </div>
                 <div class="kpi-value">${data.customers}M</div>
             </div>
             <div class="kpi-card glass" style="border-top-color: ${colors[companyId]}">
-                <h3>5Y CAPEX Plan</h3>
+                <div class="kpi-header-row">
+                    <h3>5Y CAPEX Plan</h3>
+                    <button class="info-btn" data-tooltip="Announced multi-year capital expenditure plan (5 years). Covers grid modernization, new generation capacity, and renewable investments. Source: FY2025 Earnings Call Slides & Investor Day Presentations.">ⓘ</button>
+                </div>
                 <div class="kpi-value">$${data.capex5Y}B</div>
             </div>
         `;
+
+        // Rebind tooltip listeners for newly injected info buttons
+        const tooltip = document.getElementById('info-tooltip');
+        document.querySelectorAll('#stats-grid .info-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', (e) => {
+                tooltip.textContent = btn.dataset.tooltip;
+                tooltip.classList.remove('hidden');
+                const rect = btn.getBoundingClientRect();
+                tooltip.style.left = `${rect.left - 300}px`;
+                tooltip.style.top = `${rect.top + 25}px`;
+            });
+            btn.addEventListener('mouseleave', () => {
+                tooltip.classList.add('hidden');
+            });
+        });
 
         // SWOT
         document.getElementById('swot-grid').innerHTML = `
@@ -321,6 +382,220 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Energy Mix Chart
         renderMixChart(data);
+
+        // Populating contracts
+        const tbody = document.getElementById('contracts-tbody');
+        const companyContracts = DASHBOARD_DATA.contracts ? DASHBOARD_DATA.contracts.filter(c => c.companyId === companyId) : [];
+        const strategyData = DASHBOARD_DATA.strategies && DASHBOARD_DATA.strategies[companyId] ? DASHBOARD_DATA.strategies[companyId] : null;
+        const strategyText = strategyData ? strategyData.strategy : "Strategy information not available.";
+        const strategyGW = strategyData ? strategyData.gw : "";
+
+        // Update badge
+        const badge = document.getElementById('contracts-count-badge');
+        if (badge) badge.textContent = `${companyContracts.length} deal${companyContracts.length !== 1 ? 's' : ''}`;
+        
+        if (!tbody) return;
+
+        // Helper for sector tag class
+        function getSectorClass(sector) {
+            const s = sector.toLowerCase();
+            if (s.includes('data cent') || s.includes('it')) return 'it';
+            if (s.includes('auto')) return 'auto';
+            if (s.includes('utility')) return 'utility';
+            if (s.includes('gov')) return 'govt';
+            if (s.includes('manufacturing') || s.includes('advanced')) return 'mfg';
+            return '';
+        }
+
+        // Helper for customer initials logo
+        function getCustomerInitials(name) {
+            return name.split(/[\s&,()]+/).filter(w => w.length > 0).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+        }
+
+        // Customer brand colors
+        const customerColors = {
+            'Amazon Web Services (AWS)': '#ff9900', 'Microsoft': '#00a4ef', 'Google': '#4285F4',
+            'Meta': '#1877F2', 'Toyota Battery Manufacturing': '#eb0a1e', 'VinFast': '#009A44',
+            'Nucor Corporation': '#006937', 'Digital Realty': '#002b5c', 'QTS': '#0072CE',
+            'Compass Datacenters': '#1a3c6e', 'CyrusOne': '#e87722',
+            'U.S. General Services Administration (GSA)': '#003366',
+            'Cipher Digital (AWS)': '#ff9900', 'PowLan & Menlo Equities': '#5c6bc0',
+            'LandBridge': '#8d6e63', 'Entergy': '#003DA5', 'WPPI Energy': '#388E3C',
+            'Municipal Utilities': '#607D8B'
+        };
+
+        if (companyContracts.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #999; font-style: italic;">No recent electricity contract data available for this company.</td></tr>';
+        } else {
+            tbody.innerHTML = companyContracts.map((c) => {
+                const initials = getCustomerInitials(c.customer);
+                const logoColor = customerColors[c.customer] || colors[c.companyId];
+                const sectorClass = getSectorClass(c.sector);
+                return `
+                <tr>
+                    <td class="date-cell">${c.date}</td>
+                    <td>
+                        <div class="customer-cell">
+                            <span class="customer-logo" style="background: ${logoColor};">${initials}</span>
+                            ${c.customer}
+                        </div>
+                    </td>
+                    <td><span class="sector-tag ${sectorClass}">${c.sector}</span> ${c.useCase}</td>
+                    <td><span class="load-badge">${c.load}</span></td>
+                    <td><button class="detail-btn" data-details="${escapeHTML(c.details)}" data-customer="${escapeHTML(c.customer)}">📄 Click for Details</button></td>
+                    <td><button class="analyze-btn" data-strategy="${escapeHTML(strategyText)}" data-company="${escapeHTML(data.name)}" data-gw="${escapeHTML(strategyGW)}">🔍 Analyze</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Re-bind modal buttons
+        document.querySelectorAll('.detail-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const customer = btn.dataset.customer;
+                const details = btn.dataset.details;
+                showModal(`Contract Details — ${customer}`, `<div class="modal-detail-card"><strong>📄 Excel Source — Contract Terms</strong>${details}</div>`);
+            });
+        });
+
+        document.querySelectorAll('.analyze-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const company = btn.dataset.company;
+                const strategy = btn.dataset.strategy;
+                const gw = btn.dataset.gw;
+                const gwBadge = gw ? `<span class="strategy-gw-badge">Signed ESA Pipeline: ${gw}</span>` : '';
+                showModal(`Customer Acquisition Strategy — ${company}`, `<div class="modal-strategy-card"><strong>🔍 Strategic Insights</strong>${gwBadge}<p>${strategy}</p></div>`);
+            });
+        });
+    }
+
+    // CUSTOMER DEAL ANALYTICS CHARTS
+    let contractedLoadChart, dealsSectorChart, esaPipelineChart;
+
+    function renderDealAnalyticsCharts() {
+        if (!DASHBOARD_DATA.contracts) return;
+
+        // 1. Contracted Load by Company — Horizontal Bar
+        if (contractedLoadChart) contractedLoadChart.destroy();
+        const loadByCompany = {};
+        const companyNames = { duke: 'Duke Energy', nextera: 'NextEra Energy', southern: 'Southern Co', nrg: 'NRG Energy', constellation: 'Constellation' };
+        Object.keys(companyNames).forEach(id => loadByCompany[id] = 0);
+        DASHBOARD_DATA.contracts.forEach(c => {
+            let mw = 0;
+            const loadStr = c.load.replace(/[^0-9.]/g, '');
+            if (loadStr) mw = parseFloat(loadStr);
+            // Handle GW values
+            if (c.load.toLowerCase().includes('gw')) mw = mw * 1000;
+            if (loadByCompany[c.companyId] !== undefined) loadByCompany[c.companyId] += mw;
+        });
+
+        const loadCtx = document.getElementById('contractedLoadChart')?.getContext('2d');
+        if (loadCtx) {
+            contractedLoadChart = new Chart(loadCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(loadByCompany).map(id => companyNames[id]),
+                    datasets: [{
+                        label: 'Known Contracted Load (MW)',
+                        data: Object.values(loadByCompany),
+                        backgroundColor: Object.keys(loadByCompany).map(id => colors[id]),
+                        borderRadius: 6,
+                        barThickness: 36
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#301038', anchor: 'end', align: 'right',
+                            font: { weight: 'bold', size: 11 },
+                            formatter: (v) => v > 0 ? v.toLocaleString() + ' MW' : 'N/A'
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: '#f0f2f5' }, title: { display: true, text: 'Megawatts (MW)' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 2. Customer Deals by Sector — Doughnut
+        if (dealsSectorChart) dealsSectorChart.destroy();
+        const sectorCounts = {};
+        DASHBOARD_DATA.contracts.forEach(c => {
+            sectorCounts[c.sector] = (sectorCounts[c.sector] || 0) + 1;
+        });
+        const sectorColors = { 'Data Centre': '#4caf50', 'Automotive': '#ff9800', 'Advanced Manufacturing': '#795548', 'Utility': '#993584', 'Government': '#3265aa' };
+        const sectorLabels = Object.keys(sectorCounts);
+
+        const sectorCtx = document.getElementById('dealsSectorChart')?.getContext('2d');
+        if (sectorCtx) {
+            dealsSectorChart = new Chart(sectorCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sectorLabels,
+                    datasets: [{
+                        data: sectorLabels.map(s => sectorCounts[s]),
+                        backgroundColor: sectorLabels.map(s => sectorColors[s] || '#999'),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '60%',
+                    plugins: {
+                        legend: { position: 'right', labels: { font: { size: 11 }, usePointStyle: true, boxWidth: 10 } },
+                        datalabels: {
+                            color: '#fff', font: { weight: 'bold', size: 12 },
+                            formatter: (v, ctx) => {
+                                const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                return Math.round(v / total * 100) + '%';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. ESA Pipeline Comparison — Bar Chart
+        if (esaPipelineChart) esaPipelineChart.destroy();
+        const esaData = {
+            nextera: 14.1, duke: 7.6, southern: 11, nrg: 1.8, constellation: 3.0
+        };
+
+        const esaCtx = document.getElementById('esaPipelineChart')?.getContext('2d');
+        if (esaCtx) {
+            esaPipelineChart = new Chart(esaCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(esaData).map(id => companyNames[id]),
+                    datasets: [{
+                        label: 'Signed/Upcoming ESA (GW)',
+                        data: Object.values(esaData),
+                        backgroundColor: Object.keys(esaData).map(id => colors[id]),
+                        borderColor: Object.keys(esaData).map(id => colors[id]),
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#301038', anchor: 'end', align: 'top',
+                            font: { weight: 'bold', size: 12 },
+                            formatter: (v) => v + ' GW'
+                        }
+                    },
+                    scales: {
+                        y: { grid: { color: '#f0f2f5' }, title: { display: true, text: 'Gigawatts (GW)' }, suggestedMax: 18 },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
     }
 
     function renderMixChart(data) {
@@ -617,14 +892,27 @@ document.addEventListener('DOMContentLoaded', () => {
         // Build structured knowledge base from DASHBOARD_DATA
         const knowledgeBase = [];
         Object.entries(DASHBOARD_DATA.companies).forEach(([id, c]) => {
-            knowledgeBase.push({ company: id, topic: 'financials', text: `${c.name} (${c.ticker}) has a market cap of $${c.mcap}B, FY2025 revenue of $${c.revenue}B, serves ${c.customers}M customers, and has a 5-year CAPEX commitment of $${c.capex5Y}B. Revenue trend FY2023-FY2025: $${c.revenue3Y.join('B, $')}B.`, source: 'FY2025 Annual Filing' });
+            knowledgeBase.push({ company: id, topic: 'financials', text: `${c.name} (${c.ticker}) has a market cap of $${c.mcap}B, FY2025 revenue of $${c.revenue}B, serves ${c.customers}M electricity customers (excludes gas distribution), and has a 5-year CAPEX commitment of $${c.capex5Y}B. Revenue trend FY2023-FY2025: $${c.revenue3Y.join('B, $')}B.`, source: 'FY2025 Annual Filing' });
             knowledgeBase.push({ company: id, topic: 'energy-mix', text: `${c.name} generation mix: ${c.energyMix.renewable}% Renewable, ${c.energyMix.nuclear}% Nuclear, ${c.energyMix.gas}% Gas, ${c.energyMix.coal}% Coal.`, source: 'FY2025 10-K Filing' });
             knowledgeBase.push({ company: id, topic: 'strengths', text: `${c.name} strengths: ${c.swot.s.join('; ')}.`, source: 'Annual Report Analysis' });
             knowledgeBase.push({ company: id, topic: 'weaknesses', text: `${c.name} weaknesses: ${c.swot.w.join('; ')}.`, source: '10-K Risk Factors' });
             knowledgeBase.push({ company: id, topic: 'opportunities', text: `${c.name} opportunities: ${c.swot.o.join('; ')}.`, source: 'Management Discussion' });
             knowledgeBase.push({ company: id, topic: 'threats', text: `${c.name} threats: ${c.swot.t.join('; ')}.`, source: '10-K Risk Factors' });
             knowledgeBase.push({ company: id, topic: 'earnings', text: `${c.name} Q4 FY2025 tone: ${c.earningsTone} Highlights: ${c.earningsBullets.join(' ')}`, source: 'Q4 FY2025 Earnings Transcript' });
+            
+            // Add strategies to KB
+            if (DASHBOARD_DATA.strategies && DASHBOARD_DATA.strategies[id]) {
+                knowledgeBase.push({ company: id, topic: 'strategy acquisition', text: `${c.name} Customer Acquisition Strategy: ${DASHBOARD_DATA.strategies[id].strategy}`, source: 'Competitor Contracts Excel' });
+            }
         });
+        
+        // Add contracts to KB
+        if (DASHBOARD_DATA.contracts) {
+            DASHBOARD_DATA.contracts.forEach(c => {
+                knowledgeBase.push({ company: c.companyId, topic: 'contracts deals customers', text: `${c.company} signed a contract with ${c.customer} in ${c.sector} for ${c.useCase}. Load Size: ${c.load}. Contract Details: ${c.details}. Date: ${c.date}.`, source: 'Competitor Contracts Excel' });
+            });
+        }
+
         DASHBOARD_DATA.news.forEach(n => {
             const comp = DASHBOARD_DATA.companies[n.company];
             knowledgeBase.push({ company: n.company, topic: 'news', text: `[${n.date}] ${comp.name}: ${n.title}`, source: n.source });
@@ -765,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let targetCos = [];
             Object.entries(companyMap).forEach(([id, kws]) => { if (kws.some(k => q.includes(k))) targetCos.push(id); });
 
-            const topicMap = { financials: ['revenue','market cap','capex','capital','financial','billion','customers','eps'], 'energy-mix': ['energy mix','generation','renewable','nuclear','gas','coal','capacity','solar','wind'], strengths: ['strength','advantage','strong','leader'], weaknesses: ['weakness','risk','challenge','concern'], opportunities: ['opportunity','growth','upside','potential'], threats: ['threat','headwind','competition'], earnings: ['earnings','quarter','guidance','tone','outlook','results','q4','q1'], news: ['news','recent','latest','press release','announcement','deal','acquisition'] };
+            const topicMap = { financials: ['revenue','market cap','capex','capital','financial','billion','customers','eps'], 'energy-mix': ['energy mix','generation','renewable','nuclear','gas','coal','capacity','solar','wind'], strengths: ['strength','advantage','strong','leader'], weaknesses: ['weakness','risk','challenge','concern'], opportunities: ['opportunity','growth','upside','potential'], threats: ['threat','headwind','competition'], earnings: ['earnings','quarter','guidance','tone','outlook','results','q4','q1'], news: ['news','recent','latest','press release','announcement'], 'contracts deals customers': ['contract','deal','customer','ppa','mou','data center','hyperscale','load','signed','agreement','esa'], 'strategy acquisition': ['strategy','acquisition strategy','customer acquisition','pipeline','how do they win','acquire'] };
             let targetTopics = [];
             Object.entries(topicMap).forEach(([t, sigs]) => { if (sigs.some(s => q.includes(s))) targetTopics.push(t); });
 

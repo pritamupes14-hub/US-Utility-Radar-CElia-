@@ -124,11 +124,11 @@
                         </div>
                         <div class="kpi-card glass" id="kpi-total-customers">
                             <div class="kpi-header-row">
-                                <h3>Total Customers Served</h3>
-                                <button class="info-btn" data-tooltip="Total number of retail and commercial customers. Source: Q4 Earnings Presentations & Public Web Search.">ⓘ</button>
+                                <h3>Electricity Customers Served</h3>
+                                <button class="info-btn" data-tooltip="Total electricity-only retail and commercial customers. Excludes gas distribution (e.g., Duke ~1.6M gas, Southern ~4.3M gas via Nicor/Atlanta Gas Light). Source: Q4 Earnings Presentations & 10-K Filings.">ⓘ</button>
                             </div>
-                            <div class="kpi-value">~42M</div>
-                            <div class="kpi-sub">Across all 5 peers</div>
+                            <div class="kpi-value">~28M</div>
+                            <div class="kpi-sub">Electricity-only across all 5 peers</div>
                         </div>
                         <div class="kpi-card glass" id="kpi-avg-capex">
                             <div class="kpi-header-row">
@@ -223,6 +223,7 @@
                     <div class="trends-memo glass">
                         <div class="chart-title-row">
                             <h3>📋 Market Trends Memo — Top 3 Macro Tailwinds</h3>
+                            <button class="info-btn" data-tooltip="Key industry macro-trends impacting all 5 peers based on regulatory filings, earnings calls, and market intelligence. Source: 10-K Filings, Q4 Earnings Calls, and IRA Legislative Analysis.">ⓘ</button>
                         </div>
                         <div class="memo-grid">
                             <div class="memo-card">
@@ -255,6 +256,42 @@
                             </div>
                             <div class="chart-canvas-wrap">
                                 <canvas id="capexChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CUSTOMER DEAL ANALYTICS CHARTS (Competitor Contracts Excel) -->
+                    <div class="contracts-analytics-section">
+                        <h3 class="section-title" style="margin-bottom: 1rem; margin-top: 1.75rem;">📊 Customer Deal Analytics — Competitor Contract Intelligence</h3>
+                        <div class="charts-grid">
+                            <div class="chart-card glass">
+                                <div class="chart-title-row">
+                                    <h3>Contracted Electricity Load by Company (MW)</h3>
+                                    <button class="info-btn" data-tooltip="Aggregated contracted or requested electricity load (in MW) across all known customer deals per company. This includes signed PPAs, MOUs, LOIs, and framework agreements disclosed in filings and press releases. Source: Competitor Contracts Excel & Q4 FY2025 Earnings.">ⓘ</button>
+                                </div>
+                                <div class="chart-canvas-wrap">
+                                    <canvas id="contractedLoadChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card glass">
+                                <div class="chart-title-row">
+                                    <h3>Customer Deals by Sector</h3>
+                                    <button class="info-btn" data-tooltip="Distribution of recently signed or announced customer deals across industry sectors. 'Data Centre' includes hyperscale, colocation, and AI compute facilities. Source: Competitor Contracts Excel.">ⓘ</button>
+                                </div>
+                                <div class="chart-canvas-wrap">
+                                    <canvas id="dealsSectorChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="charts-grid" style="margin-top: 1.25rem;">
+                            <div class="chart-card glass span-2">
+                                <div class="chart-title-row">
+                                    <h3>Signed Customer Load Pipeline — Electricity Commitments (GW)</h3>
+                                    <button class="info-btn" data-tooltip="Total signed or announced electricity customer load commitments per company, measured in Gigawatts (GW). Includes PPAs, MOUs, LOIs, ESAs (Energy Service Agreements), and framework agreements for large-load customers (data centres, hyperscalers, industrials). Higher values indicate larger signed pipelines for future electricity demand. Source: Competitor Contracts Excel & Q4 FY2025 Earnings Presentations.">ⓘ</button>
+                                </div>
+                                <div class="chart-canvas-wrap">
+                                    <canvas id="esaPipelineChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -313,6 +350,32 @@
                             </div>
                             <div class="chart-canvas-wrap">
                                 <canvas id="energyMixChart"></canvas>
+                            </div>
+                        </div>
+
+
+                        <!-- RECENT CUSTOMER DEALS TABLE -->
+                        <div class="contracts-container glass" id="contracts-container">
+                            <div class="contracts-header">
+                                <h3 class="section-title">⚡ Recent Customer Deals — Electricity Business</h3>
+                                <span class="contracts-badge" id="contracts-count-badge">0 deals</span>
+                            </div>
+                            <div class="contracts-table-wrap">
+                                <table class="contracts-table" id="contracts-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Customer</th>
+                                            <th>Sector & Use Case</th>
+                                            <th>Load Size</th>
+                                            <th>Contract Details</th>
+                                            <th>Acquisition Strategy</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="contracts-tbody">
+                                        <!-- Populated by JS -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -436,8 +499,10 @@
                 <button class="suggestion-chip" data-q="Compare revenue across all peers">Revenue comparison</button>
                 <button class="suggestion-chip" data-q="What are Duke Energy's key risks?">Duke risks</button>
                 <button class="suggestion-chip" data-q="Summarize Constellation's nuclear advantage">CEG nuclear edge</button>
-                <button class="suggestion-chip" data-q="What are the latest news for NextEra?">NEE latest news</button>
+                <button class="suggestion-chip" data-q="What are the latest customer deals for NextEra?">NEE customer deals</button>
+                <button class="suggestion-chip" data-q="What is Duke Energy's customer acquisition strategy?">Duke strategy</button>
                 <button class="suggestion-chip" data-q="Compare CAPEX plans across peers">CAPEX benchmark</button>
+                <button class="suggestion-chip" data-q="What contracts has Constellation signed with data centers?">CEG contracts</button>
                 <button class="suggestion-chip" data-q="What are NRG's growth opportunities?">NRG opportunities</button>
             </div>
             <div class="celia-input-area">
@@ -453,6 +518,16 @@
 
         <!-- INFO TOOLTIP -->
         <div id="info-tooltip" class="info-tooltip-box hidden"></div>
+    </div>
+
+    <!-- STRATEGY / DETAILS MODAL (outside #app to avoid z-index stacking context) -->
+    <div id="details-modal-overlay" class="modal-overlay">
+        <div class="modal-dialog">
+            <div class="modal-accent-bar"></div>
+            <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+            <h3 id="modal-title" class="modal-title"></h3>
+            <div id="modal-body" class="modal-body"></div>
+        </div>
     </div>
 
     <script src="data.js"></script>
