@@ -831,7 +831,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body></html>`;
 
-            const emlContent = 'To: \r\nSubject: Executive Peer Intelligence Brief\r\nX-Unsent: 1\r\nContent-Type: text/html; charset="utf-8"\r\n\r\n' + htmlContent;
+            const boundary = 'boundary_' + Date.now();
+            const emlContent = [
+                'MIME-Version: 1.0',
+                'Date: ' + new Date().toUTCString(),
+                'Subject: Executive Peer Intelligence Brief — Evalueserve',
+                'X-Unsent: 1',
+                'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+                '',
+                '--' + boundary,
+                'Content-Type: text/html; charset="utf-8"',
+                'Content-Transfer-Encoding: 7bit',
+                '',
+                htmlContent,
+                '',
+                '--' + boundary + '--'
+            ].join('\r\n');
 
             const blob = new Blob([emlContent], { type: 'message/rfc822' });
             const url = window.URL.createObjectURL(blob);
