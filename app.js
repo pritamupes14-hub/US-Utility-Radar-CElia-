@@ -700,50 +700,67 @@ document.addEventListener('DOMContentLoaded', () => {
         // Generate Newsletter — Opens a beautifully formatted HTML newsletter in a new tab
         document.getElementById('generate-newsletter')?.addEventListener('click', () => {
             const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            const categoryLabels = { earnings: 'Earnings', strategy: 'Strategy', deals: 'M&A / Deals', regulatory: 'Regulatory', 'live-feed': 'Live Feed' };
             const companyColors = { nextera: '#f5a623', duke: '#4a90d9', southern: '#e0044e', constellation: '#27ae60', nrg: '#8e44ad' };
 
-            // Build company sections
+            // Build Peer Intelligence Summary
             const companyOrder = ['nextera', 'duke', 'southern', 'constellation', 'nrg'];
             let companySections = '';
+            
+            // Generate Executive Overview
+            let totalCapex = 0;
+            let totalCustomers = 0;
+            companyOrder.forEach(id => {
+                totalCapex += DASHBOARD_DATA.companies[id].capex5Y;
+                totalCustomers += parseFloat(DASHBOARD_DATA.companies[id].customers.replace(/[^0-9.]/g, ''));
+            });
+
             companyOrder.forEach(compId => {
                 const comp = DASHBOARD_DATA.companies[compId];
-                const compNews = DASHBOARD_DATA.news.filter(n => n.company === compId);
-                if (compNews.length === 0) return;
                 const color = companyColors[compId] || '#301038';
-
-                let rows = compNews.map(n => {
-                    const catLabel = categoryLabels[n.category] || n.category;
-                    return `<tr>
-                        <td style="padding:10px 14px;border-bottom:1px solid #eee;font-size:13px;color:#555;white-space:nowrap;">${n.date}</td>
-                        <td style="padding:10px 14px;border-bottom:1px solid #eee;">
-                            <span style="display:inline-block;background:#f0f0f5;color:#555;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase;margin-bottom:4px;">${catLabel}</span><br>
-                            <span style="font-size:14px;font-weight:600;color:#222;">${n.title}</span>
-                        </td>
-                        <td style="padding:10px 14px;border-bottom:1px solid #eee;font-size:12px;color:#888;">${n.source}</td>
-                        <td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:center;">
-                            <a href="${n.link}" style="display:inline-block;background:${color};color:#fff;padding:5px 12px;border-radius:4px;text-decoration:none;font-size:11px;font-weight:600;">Read →</a>
-                        </td>
-                    </tr>`;
-                }).join('');
+                const swot = comp.swot;
 
                 companySections += `
-                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border-collapse:collapse;">
-                    <tr>
-                        <td colspan="4" style="padding:12px 16px;background:${color};color:#fff;font-size:16px;font-weight:700;border-radius:8px 8px 0 0;">
-                            ${comp.name} <span style="opacity:0.7;font-weight:400;font-size:13px;">(${comp.ticker})</span>
-                            <span style="float:right;font-size:12px;opacity:0.8;">${compNews.length} release${compNews.length > 1 ? 's' : ''}</span>
-                        </td>
-                    </tr>
-                    <tr style="background:#f8f9fa;">
-                        <td style="padding:8px 14px;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;border-bottom:2px solid #e0e0e0;width:100px;">Date</td>
-                        <td style="padding:8px 14px;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;border-bottom:2px solid #e0e0e0;">Headline</td>
-                        <td style="padding:8px 14px;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;border-bottom:2px solid #e0e0e0;width:160px;">Source</td>
-                        <td style="padding:8px 14px;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;border-bottom:2px solid #e0e0e0;width:80px;text-align:center;">Link</td>
-                    </tr>
-                    ${rows}
-                </table>`;
+                <div style="margin-bottom:28px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+                    <div style="padding:12px 16px;background:${color};color:#fff;font-size:16px;font-weight:700;">
+                        ${comp.name} <span style="opacity:0.7;font-weight:400;font-size:13px;">(${comp.ticker})</span>
+                        <span style="float:right;font-size:13px;opacity:0.9;">Market Cap: $${comp.marketCap}B | Rev: $${comp.revenue3Y[2]}B</span>
+                    </div>
+                    <div style="padding:16px;background:#f8f9fa;font-size:13px;color:#444;line-height:1.6;">
+                        <div style="margin-bottom:12px;"><strong>Strategic Focus:</strong> ${comp.summary}</div>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="50%" valign="top" style="padding-right:12px;">
+                                    <strong style="color:#27ae60;">Key Strengths:</strong>
+                                    <ul style="margin-top:4px;padding-left:20px;margin-bottom:0;"><li>${swot.strengths.join('</li><li>')}</li></ul>
+                                </td>
+                                <td width="50%" valign="top" style="padding-left:12px;border-left:1px solid #eee;">
+                                    <strong style="color:#e0044e;">Key Risks:</strong>
+                                    <ul style="margin-top:4px;padding-left:20px;margin-bottom:0;"><li>${swot.weaknesses.join('</li><li>')}</li></ul>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>`;
             });
+
+            // Add Hyperscale Deals Summary
+            let dealsSummary = `
+                <div style="margin-bottom:28px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+                    <div style="padding:12px 16px;background:#301038;color:#fff;font-size:16px;font-weight:700;">
+                        Hyperscale & Data Center Deal Intelligence
+                    </div>
+                    <div style="padding:16px;background:#f8f9fa;font-size:13px;color:#444;line-height:1.6;">
+                        <strong>Key Macro Trend:</strong> Utilities are securing massive, long-term power contracts with tech giants (Google, Microsoft, Amazon, Meta) driven by AI data center load growth. Focus has shifted from general capacity to firm, 24/7 carbon-free energy (CFE).
+                        <br><br>
+                        <strong>Select Recent Contracts:</strong>
+                        <ul style="margin-top:8px;padding-left:20px;">
+            `;
+            
+            // Just grab top 5 contracts for the newsletter
+            DASHBOARD_DATA.contracts.slice(0, 5).forEach(c => {
+                 dealsSummary += `<li><strong>${c.company} & ${c.customer}:</strong> ${c.load !== 'N/A' ? c.load : 'Unspecified load'} for ${c.useCase}. <em>${c.details}</em></li>`;
+            });
+            dealsSummary += `</ul></div></div>`;
 
             const htmlContent = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>CELIA Executive Intelligence Brief</title></head>
@@ -762,8 +779,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <tr>
         <td style="background:linear-gradient(135deg,#301038 0%,#5b2d6e 100%);padding:32px 40px;text-align:center;">
             <div style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:8px;">EVALUESERVE</div>
-            <div style="font-size:26px;font-weight:800;color:#ffffff;margin-bottom:4px;">Consumer Energy Live Intelligence Agent</div>
-            <div style="font-size:14px;color:rgba(255,255,255,0.7);">Executive Intelligence Brief — ${today}</div>
+            <div style="font-size:26px;font-weight:800;color:#ffffff;margin-bottom:4px;">Executive Peer Intelligence</div>
+            <div style="font-size:14px;color:rgba(255,255,255,0.7);">C-Level Strategy Brief — ${today}</div>
             <div style="margin-top:16px;display:inline-block;background:#e0044e;color:#fff;padding:6px 20px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;">CONFIDENTIAL</div>
         </td>
     </tr>
@@ -774,29 +791,34 @@ document.addEventListener('DOMContentLoaded', () => {
             <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;">
                 <tr>
                     <td style="padding:16px;text-align:center;background:#fafbfc;border-right:1px solid #e8e8e8;width:25%;">
-                        <div style="font-size:24px;font-weight:800;color:#301038;">${DASHBOARD_DATA.news.length}</div>
-                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Press Releases</div>
+                        <div style="font-size:24px;font-weight:800;color:#301038;">$${totalCapex.toFixed(1)}B</div>
+                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Aggregate 5Y CAPEX</div>
                     </td>
                     <td style="padding:16px;text-align:center;background:#fafbfc;border-right:1px solid #e8e8e8;width:25%;">
                         <div style="font-size:24px;font-weight:800;color:#301038;">5</div>
-                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Companies</div>
+                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Peers Analyzed</div>
                     </td>
                     <td style="padding:16px;text-align:center;background:#fafbfc;border-right:1px solid #e8e8e8;width:25%;">
-                        <div style="font-size:24px;font-weight:800;color:#27ae60;">100%</div>
-                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Verified</div>
+                        <div style="font-size:24px;font-weight:800;color:#27ae60;">~${totalCustomers.toFixed(1)}M</div>
+                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Electricity Customers</div>
                     </td>
                     <td style="padding:16px;text-align:center;background:#fafbfc;width:25%;">
-                        <div style="font-size:24px;font-weight:800;color:#301038;">${DASHBOARD_DATA.news[0]?.date || '—'}</div>
-                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Latest</div>
+                        <div style="font-size:24px;font-weight:800;color:#301038;">Q4 '25</div>
+                        <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;">Data Vintage</div>
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
 
-    <!-- Company Sections -->
+    <!-- Content Sections -->
     <tr>
         <td style="padding:24px 40px;">
+            <div style="margin-bottom:24px;font-size:14px;color:#555;line-height:1.6;">
+                <strong>Executive Summary:</strong> The US utility sector is undergoing a rapid transformation driven by unprecedented hyperscale data center load growth. Traditional regulated models are evolving to accommodate "bring your own clean energy" models and specialized tariffs. This brief outlines the strategic positioning of the top 5 utility peers.
+            </div>
+            ${dealsSummary}
+            <h3 style="color:#301038;font-size:18px;margin-bottom:16px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;">Peer Strategic Profiles</h3>
             ${companySections}
         </td>
     </tr>
@@ -805,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <tr>
         <td style="background:#f8f9fa;padding:24px 40px;border-top:1px solid #e8e8e8;text-align:center;">
             <div style="font-size:11px;color:#999;margin-bottom:4px;">This intelligence brief was auto-generated by <strong style="color:#301038;">CELIA</strong> — Consumer Energy Live Intelligence Agent</div>
-            <div style="font-size:11px;color:#bbb;">Powered by Evalueserve | All sources verified from official company newsrooms</div>
+            <div style="font-size:11px;color:#bbb;">Powered by Evalueserve | Synthesized from FY2025 filings & executive commentary</div>
         </td>
     </tr>
 </table>
