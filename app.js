@@ -767,11 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <html><head><meta charset="utf-8"><title>CELIA Executive Intelligence Brief</title></head>
 <body style="margin:0;padding:0;background:#f4f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
 
-<!-- Copy Instructions Banner -->
-<div id="copy-banner" style="position:sticky;top:0;z-index:100;background:linear-gradient(135deg,#301038,#5b2d6e);padding:12px 24px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.2);">
-    <span style="color:#fff;font-size:14px;margin-right:16px;">📋 To send this newsletter: Press <strong>Ctrl+A</strong> → <strong>Ctrl+C</strong> → Paste into Outlook</span>
-    <button onclick="document.getElementById('copy-banner').style.display='none'" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:12px;">Dismiss</button>
-</div>
+
 
 <!-- Newsletter Container -->
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:780px;margin:24px auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
@@ -835,9 +831,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body></html>`;
 
-            const newTab = window.open('', '_blank');
-            newTab.document.write(htmlContent);
-            newTab.document.close();
+            const emlContent = \`To: 
+Subject: Executive Peer Intelligence Brief
+X-Unsent: 1
+Content-Type: text/html; charset="utf-8"
+
+\${htmlContent}\`;
+
+            const blob = new Blob([emlContent], { type: 'message/rfc822' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = \`Executive_Intelligence_Brief.eml\`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         });
     }
 
