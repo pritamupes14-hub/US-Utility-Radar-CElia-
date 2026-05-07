@@ -831,18 +831,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body></html>`;
 
-            const emlContent = \`To: 
-Subject: Executive Peer Intelligence Brief
-X-Unsent: 1
-Content-Type: text/html; charset="utf-8"
-
-\${htmlContent}\`;
+            const emlContent = 'To: \r\nSubject: Executive Peer Intelligence Brief\r\nX-Unsent: 1\r\nContent-Type: text/html; charset="utf-8"\r\n\r\n' + htmlContent;
 
             const blob = new Blob([emlContent], { type: 'message/rfc822' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = \`Executive_Intelligence_Brief.eml\`;
+            a.download = 'Executive_Intelligence_Brief.eml';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
