@@ -711,31 +711,32 @@ document.addEventListener('DOMContentLoaded', () => {
             let totalCustomers = 0;
             companyOrder.forEach(id => {
                 totalCapex += DASHBOARD_DATA.companies[id].capex5Y;
-                totalCustomers += parseFloat(DASHBOARD_DATA.companies[id].customers.replace(/[^0-9.]/g, ''));
+                totalCustomers += DASHBOARD_DATA.companies[id].customers;
             });
 
             companyOrder.forEach(compId => {
                 const comp = DASHBOARD_DATA.companies[compId];
                 const color = companyColors[compId] || '#301038';
                 const swot = comp.swot;
+                const strategy = DASHBOARD_DATA.strategies && DASHBOARD_DATA.strategies[compId] ? DASHBOARD_DATA.strategies[compId].strategy : comp.earningsTone;
 
                 companySections += `
                 <div style="margin-bottom:28px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
                     <div style="padding:12px 16px;background:${color};color:#fff;font-size:16px;font-weight:700;">
                         ${comp.name} <span style="opacity:0.7;font-weight:400;font-size:13px;">(${comp.ticker})</span>
-                        <span style="float:right;font-size:13px;opacity:0.9;">Market Cap: $${comp.marketCap}B | Rev: $${comp.revenue3Y[2]}B</span>
+                        <span style="float:right;font-size:13px;opacity:0.9;">Market Cap: $${comp.marketCap || comp.mcap}B | Rev: $${comp.revenue3Y[2]}B</span>
                     </div>
                     <div style="padding:16px;background:#f8f9fa;font-size:13px;color:#444;line-height:1.6;">
-                        <div style="margin-bottom:12px;"><strong>Strategic Focus:</strong> ${comp.summary}</div>
+                        <div style="margin-bottom:12px;"><strong>Strategic Focus:</strong> ${strategy}</div>
                         <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td width="50%" valign="top" style="padding-right:12px;">
                                     <strong style="color:#27ae60;">Key Strengths:</strong>
-                                    <ul style="margin-top:4px;padding-left:20px;margin-bottom:0;"><li>${swot.strengths.join('</li><li>')}</li></ul>
+                                    <ul style="margin-top:4px;padding-left:20px;margin-bottom:0;"><li>${swot.s.join('</li><li>')}</li></ul>
                                 </td>
                                 <td width="50%" valign="top" style="padding-left:12px;border-left:1px solid #eee;">
                                     <strong style="color:#e0044e;">Key Risks:</strong>
-                                    <ul style="margin-top:4px;padding-left:20px;margin-bottom:0;"><li>${swot.weaknesses.join('</li><li>')}</li></ul>
+                                    <ul style="margin-top:4px;padding-left:20px;margin-bottom:0;"><li>${swot.w.join('</li><li>')}</li></ul>
                                 </td>
                             </tr>
                         </table>
